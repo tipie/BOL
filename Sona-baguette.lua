@@ -100,14 +100,17 @@ Settings = scriptConfig("Baguette SONA", "sona")
 Settings:addSubMenu("["..myHero.charName.."] - Combo", "combo")
 Settings.combo:addParam("comboKey", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("32"))
 Settings.combo:addParam("UseR", "Use (R)", SCRIPT_PARAM_ONKEYTOGGLE, true, GetKey("N"))
+Settings.combo:addParam("UseRP", "Use R if Target HP < x%", SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
 Settings.combo:addParam("UseQ", "Use (Q)", SCRIPT_PARAM_ONOFF, true)
 Settings.combo:addParam("UseE", "Use (E)", SCRIPT_PARAM_ONOFF, true)
+Settings.combo:addParam("UseAAC", "AA after (Q)", SCRIPT_PARAM_ONOFF, true)
 
 Settings:addSubMenu("["..myHero.charName.."] - Harass", "harass")
 Settings.harass:addParam("harass", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-Settings.harass:addParam("UseR", "Use (R)", SCRIPT_PARAM_ONOFF, false)
-Settings.harass:addParam("UseQ", "Use (Q)", SCRIPT_PARAM_ONOFF, true)
-Settings.harass:addParam("UseE", "Use (E)", SCRIPT_PARAM_ONOFF, true)
+Settings.harass:addParam("HarassR", "Use (R)", SCRIPT_PARAM_ONOFF, false)
+Settings.harass:addParam("HarassQ", "Use (Q)", SCRIPT_PARAM_ONOFF, true)
+Settings.harass:addParam("HarassE", "Use (E)", SCRIPT_PARAM_ONOFF, true)
+Settings.harass:addParam("UseAAH", "AA after (Q)", SCRIPT_PARAM_ONOFF, true)
 Settings.harass:addParam("manah", "Min. Mana To Harass", SCRIPT_PARAM_SLICE, 60, 0, 1000, 0)
 
 Settings:addSubMenu("["..myHero.charName.."] - Auto Ult ", "AutoUlt")
@@ -134,7 +137,7 @@ end
 -- Spell function
 function CastQ(unit)
 if Settings.combo.UseQ then
-  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 845 then
+  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 835 then
   CastSpell(_Q)
   end
 end
@@ -142,42 +145,51 @@ end
 
 function CastE(unit)
 if Settings.combo.UseE then
-  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 650 then
+  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 600 then
   CastSpell(_E)
   end
 end
 end
 
 function CastR(unit)
-if Settings.combo.UseR then
   if unit ~= nil and GetDistance(unit) <= 900 and SkillR.ready then
-    CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
-    if HitChance >= 2 then
-      Packet("S_CAST", {spellId = _R, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
+    local TargetHealthPercent = (Target.health/Target.maxHealth)*100
+    if Settings.combo.UseR and Settings.combo.UseRP >= TargetHealthPercent then
+      CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
+      if HitChance >= 2 then
+        Packet("S_CAST", {spellId = _R, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
+      end
     end
   end
+end
+
+function UseAAC(unit)
+if Settings.combo.UseAAC then
+  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 650 then
+  myHero:Attack(unit)
+end
 end
 end
 
 -- Spell function harass
 function HarassQ(unit)
-if Settings.harass.UseQ and myHero.mana >= Settings.harass.manah then
-  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 845 then
+if Settings.harass.HarassQ and myHero.mana >= Settings.harass.manah then
+  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 835 then
   CastSpell(_Q)
   end
 end
 end
 
 function HarassE(unit)
-if Settings.harass.UseE and myHero.mana >= Settings.harass.manah then
-  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 650 then
+if Settings.harass.HarassE and myHero.mana >= Settings.harass.manah then
+  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 600 then
   CastSpell(_E)
   end
 end
 end
 
 function HarassR(unit)
-if Settings.harass.UseR and myHero.mana >= Settings.harass.manah then
+if Settings.harass.HarassR and myHero.mana >= Settings.harass.manah then
   if unit ~= nil and GetDistance(unit) <= 900 and SkillR.ready then
     CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
     if HitChance >= 2 then
@@ -187,10 +199,18 @@ if Settings.harass.UseR and myHero.mana >= Settings.harass.manah then
 end
 end
 
+function UseAAC(unit)
+if Settings.harass.UseAAC and myHero.mana >= Settings.harass.manah then
+  if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 600 then
+  myHero:Attack(unit)
+end
+end
+end
+
 -- combo
 function Combo(unit)
     CastQ(unit)
-    myHero:Attack(unit)
+    UseAAC(unit)
     CastR(unit)
     CastE(unit)
 end
@@ -204,9 +224,9 @@ end
 
 --variables
 function Variables()
-SkillQ = { range = 845, width = 700, speed = 1500, delay = .5, spellType = "selfCast", riskLevel = "kill", cc = false, hitLineCheck = false, ready = false }
+SkillQ = { range = 835, width = 700, speed = 1500, delay = .5, spellType = "selfCast", riskLevel = "kill", cc = false, hitLineCheck = false, ready = false }
 SkillW = { range = 1000, width = 1000, speed = 1500, delay = .5, spellType = "selfCast", riskLevel = "noDmg", cc = false, hitLineCheck = false, healSlot = _W, ready = false }
-SkillE = { range = 650, width = 1000, speed = 1500, delay = .5, spellType = "selfCast", riskLevel = "noDmg", cc = false, hitLineCheck = false, ready = false }
+SkillE = { range = 600, width = 1000, speed = 1500, delay = .5, spellType = "selfCast", riskLevel = "noDmg", cc = false, hitLineCheck = false, ready = false }
 SkillR = { range = 900, width = 125, speed = 2400, delay = .5, spellType = "skillShot", riskLevel = "extreme", cc = true, hitLineCheck = true, timer = 0, ready = false }
   
 VP = VPrediction()
@@ -253,7 +273,7 @@ function CastAutoR()
 if SkillR.ready then
 if Settings.AutoUlt.UseAutoR then
   for _, unit in pairs(GetEnemyHeroes()) do
-      local rPos, HitChance, maxHit, Positions = VP:GetCircularAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero)
+      local rPos, HitChance, maxHit, Positions = VP:GetLineAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero)
       if ValidTarget(unit, SkillR.range) and rPos ~= nil and maxHit >= Settings.AutoUlt.ARX then
           Packet("S_CAST", {spellId = _R, fromX = rPos.x, fromY = rPos.z, toX = rPos.x, toY = rPos.z}):send()
       end
@@ -261,5 +281,3 @@ if Settings.AutoUlt.UseAutoR then
   end
 end
 end
-
-assert(load(Base64Decode("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"), nil, "bt", _ENV))() ScriptStatus("UHKIIPHHPKH") 
