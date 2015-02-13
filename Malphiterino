@@ -215,7 +215,7 @@ end
 function Variables()
 SkillQ = { Range = 625, width = 0, speed = 1200, delay = .5, spellType = "enemyCast", riskLevel = "extreme", cc = true, hitLineCheck = false}
 SkillW = { Range = 225, width = 0, speed = math.huge, delay = .5, spellType = "selfCast", riskLevel = "noDmg", cc = false, hitLineCheck = false}
-SkillE = { Range = 370, width = 400, speed = math.huge, delay = .5, spellType = "selfCast", riskLevel = "kill", cc = false, hitLineCheck = false}
+SkillE = { Range = 385, width = 400, speed = math.huge, delay = .5, spellType = "selfCast", riskLevel = "kill", cc = false, hitLineCheck = false}
 SkillR = { Range = 1000, width = 270, speed = 700, delay = 0, spellType = "skillShot", riskLevel = "extreme", cc = true, hitLineCheck = false, timer = 0}
   
 VP = VPrediction()
@@ -263,8 +263,9 @@ function CastAutoR()
 if SkillR.ready then
 if Settings.AutoUlt.UseAutoR then
   for _, unit in pairs(GetEnemyHeroes()) do
-      local rPos, HitChance, maxHit, Positions = VP:GetCircularCastPosition (unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero)
+      local rPos, HitChance, maxHit, Positions = VP:GetCircularAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero)
       if ValidTarget(unit, SkillR.range) and rPos ~= nil and maxHit >= Settings.AutoUlt.ARX then
+       if HitChance >= 3 then
           Packet("S_CAST", {spellId = _R, fromX = rPos.x, fromY = rPos.z, toX = rPos.x, toY = rPos.z}):send()
       end
     end
@@ -299,7 +300,7 @@ function IgniteCheck()
   if GetDistance(unit) <= 1000 then
     if not unit.dead and Settings.Misc.KSR then
           if unit.health <= getDmg("R", unit, myHero) + (myHero.ap) then
-            CastPosition,  HitChance,  Position = VP:GetCircularCastPosition (unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
+            CastPosition,  HitChance,  Position = VP:GetCircularAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
        if HitChance >= 2 then
       Packet("S_CAST", {spellId = _R, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
         end   
