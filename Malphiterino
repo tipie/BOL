@@ -272,6 +272,7 @@ if Settings.AutoUlt.UseAutoR then
   end
 end
 end
+end
 
 --ignite
 function IgniteCheck()
