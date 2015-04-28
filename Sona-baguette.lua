@@ -1,5 +1,5 @@
   if myHero.charName ~= "Sona" or not VIP_USER then return end
-  
+  require 'HPrediction'  
   assert(load(Base64Decode("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"), nil, "bt", _ENV))() ScriptStatus("PCFDDKCCKFC") 
   
   --A basic BoL template for the Eclipse Lua Development Kit module's execution environment written by Nader Sl.
@@ -13,6 +13,12 @@
   Variables() 
   Menu()
   Checkorbwalk()
+  HPred = HPrediction()
+  Spell_R.delay['Sona'] = 0.25
+  Spell_R.range['Sona'] = 900
+  Spell_R.speed['Sona'] = 2400
+  Spell_R.type['Sona'] = "DelayLine" -- (it has tail like comet)
+  Spell_R.width['Sona'] = 280
   end
   
   -- handles script logic, a pure high speed loop
@@ -28,12 +34,12 @@
   
   
     if Target ~= nil then
-    if Settings.combo.comboKey then
+    if Settings.Key.comboKey then
         Combo(Target)
       end
     end
     if Target ~= nil then
-    if Settings.harass.harass then
+    if Settings.Key.harass then
       Harass(Target)
       end
       end
@@ -48,13 +54,13 @@
       end
       
       if SkillQ.ready and Settings.Draw.DrawQ then 
-        DrawCircle(myHero.x, myHero.y, myHero.z, SkillQ.range, ARGB(200,50 ,100,0 ))
+        DrawCircle(myHero.x, myHero.y, myHero.z, Settings.combo.Qrange, ARGB(200,50 ,100,0 ))
       end
       if SkillE.ready and Settings.Draw.DrawE then 
-        DrawCircle(myHero.x, myHero.y, myHero.z, SkillE.range, ARGB(200,50 ,100,0 ))
+        DrawCircle(myHero.x, myHero.y, myHero.z, Settings.combo.Erange, ARGB(200,50 ,100,0 ))
       end
       if SkillR.ready and Settings.Draw.DrawR then 
-        DrawCircle(myHero.x, myHero.y, myHero.z, SkillR.range, ARGB(200,50 ,100,0 ))
+        DrawCircle(myHero.x, myHero.y, myHero.z, Settings.combo.Rrange, ARGB(200,50 ,100,0 ))
       end
     end
   end
@@ -101,45 +107,69 @@
   Settings = scriptConfig("Baguette SONA", "sona")    
    
   Settings:addSubMenu("["..myHero.charName.."] - Combo", "combo")
-  Settings.combo:addParam("comboKey", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("32"))
-  Settings.combo:addParam("comboKey", "Combo Key (toggle)", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("32"))
   Settings.combo:addParam("UseR", "Use (R)", SCRIPT_PARAM_ONKEYTOGGLE, true, GetKey("N"))
-  Settings.combo:addParam("UseRP", "Use R if Target HP < x%", SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
+  Settings.combo:addParam("Rrange", "Max range for (R)", SCRIPT_PARAM_SLICE, 900, 0, 1000, 0)
+  Settings.combo:addParam("UseRP", "Use R if Target HP < x%", SCRIPT_PARAM_SLICE, 65, 0, 100, 0)
   Settings.combo:addParam("UseQ", "Use (Q)", SCRIPT_PARAM_ONOFF, true)
+  Settings.combo:addParam("Qrange", "Max range for (Q)", SCRIPT_PARAM_SLICE, 835, 0, 850, 0)
   Settings.combo:addParam("UseE", "Use (E)", SCRIPT_PARAM_ONOFF, true)
-  Settings.combo:addParam("UseAAC", "AA after (Q)", SCRIPT_PARAM_ONOFF, true)
+  Settings.combo:addParam("Erange", "Max range for (E)", SCRIPT_PARAM_SLICE, 600, 0, 1000, 0)
   
   Settings:addSubMenu("["..myHero.charName.."] - Harass", "harass")
-  Settings.harass:addParam("harass", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-  Settings.harass:addParam("harass", "Harass2", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-  Settings.harass:addParam("harass", "Harass (toggle)", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("J"))
   Settings.harass:addParam("HarassR", "Use (R)", SCRIPT_PARAM_ONOFF, false)
+  Settings.harass:addParam("Rrange", "Max range for (R)", SCRIPT_PARAM_SLICE, 900, 0, 1000, 0)
+  Settings.harass:addParam("UseRP", "Use R if Target HP < x%", SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
   Settings.harass:addParam("HarassQ", "Use (Q)", SCRIPT_PARAM_ONOFF, true)
+  Settings.harass:addParam("Qrange", "Max range for (Q)", SCRIPT_PARAM_SLICE, 835, 0, 850, 0)
   Settings.harass:addParam("HarassE", "Use (E)", SCRIPT_PARAM_ONOFF, true)
-  Settings.harass:addParam("UseAAH", "AA after (Q)", SCRIPT_PARAM_ONOFF, true)
   Settings.harass:addParam("manah", "Min. Mana To Harass", SCRIPT_PARAM_SLICE, 60, 0, 1000, 0)
+  Settings.harass:addParam("Erange", "Max range for (E)", SCRIPT_PARAM_SLICE, 600, 0, 1000, 0)
   
   Settings:addSubMenu("["..myHero.charName.."] - Auto Ult ", "AutoUlt")
   Settings.AutoUlt:addParam("UseAutoR", "Auto R if X enemie", SCRIPT_PARAM_ONKEYTOGGLE, false, GetKey("C"))
   Settings.AutoUlt:addParam("ARX", "X = ", SCRIPT_PARAM_SLICE, 3, 1, 5, 0)
+  Settings.AutoUlt:addSubMenu("Use auto ult on : ", "BlackListA")
+  if #GetEnemyHeroes() > 0 then
+  for idx, enemy in ipairs(GetEnemyHeroes()) do
+  Settings.AutoUlt.BlackListA:addParam(enemy.charName, enemy.charName, SCRIPT_PARAM_ONOFF, true)
+  end
+  end 
   
+    
   Settings:addSubMenu("["..myHero.charName.."] - Draw", "Draw")
   Settings.Draw:addParam("DrawQ", "Draw (Q)", SCRIPT_PARAM_ONOFF, true)
   Settings.Draw:addParam("DrawE", "Draw (E)", SCRIPT_PARAM_ONOFF, true)
   Settings.Draw:addParam("DrawR", "Draw (R)", SCRIPT_PARAM_ONOFF, true)
   
+  Settings:addSubMenu("["..myHero.charName.."] - Key ", "Key")
+  Settings.Key:addParam("comboKey", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("32"))
+  Settings.Key:addParam("comboKey", "Combo Key (toggle)", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("32"))
+  Settings.Key:addParam("harass", "Harass Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+  Settings.Key:addParam("harass", "Harass key (2)", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+  Settings.Key:addParam("harass", "Harass (toggle)", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("J"))
+  
+
+
+  
+  
+  
   Settings:addSubMenu("["..myHero.charName.."] - Misc", "Misc")
   Settings.Misc:addParam("KSQ", "Auto KS with Q", SCRIPT_PARAM_ONOFF, true)
+  Settings.Misc:addParam("Prediction","Choose Prediction : ", SCRIPT_PARAM_LIST, 2, {"Vpred", "Hpred"})
+  Settings.Misc:addParam("R", "HPred hitchance (Default = 1.25)", SCRIPT_PARAM_SLICE, 1.25, 1, 3, 2)
   
   if #GetEnemyHeroes() > 0 then
   Settings:addSubMenu("["..myHero.charName.."] - Use R on : ", "BlackList")
   for idx, enemy in ipairs(GetEnemyHeroes()) do
   Settings.BlackList:addParam(enemy.charName, enemy.charName, SCRIPT_PARAM_ONOFF, true)
   end
-  end  
+  end
+
+
+    
   
-  Settings.combo:permaShow("comboKey")
-  Settings.harass:permaShow("harass")
+  Settings.Key:permaShow("comboKey")
+  Settings.Key:permaShow("harass")
   Settings.combo:permaShow("UseR")
   Settings.AutoUlt:permaShow("UseAutoR")
   Settings.AutoUlt:permaShow("ARX")
@@ -152,84 +182,109 @@
   -- Spell function
   function CastQ(unit)
   if Settings.combo.UseQ then
-    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 835 then
+    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= Settings.combo.Qrange then
+    if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
     CastSpell(_Q)
+      end
+     end
     end
-  end
-  end
+end
   
   function CastE(unit)
   if Settings.combo.UseE then
-    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 600 then
+    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= Settings.combo.Erange then
+    if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
     CastSpell(_E)
-    end
-  end
-  end
-  
-  function CastR(unit)
-    if unit ~= nil and GetDistance(unit) <= 900 and SkillR.ready then
-      local TargetHealthPercent = (Target.health/Target.maxHealth)*100
-      if Settings.combo.UseR and Settings.combo.UseRP >= TargetHealthPercent then
-      if Settings.BlackList[unit.charName] then
-        CastPosition,  HitChance,  Position = VP:GetLineAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
-        if HitChance >= 2 then
-          Packet("S_CAST", {spellId = _R, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
         end
       end
     end
-  end
-  end
+end  
   
-  function UseAAC(unit)
-  if Settings.combo.UseAAC then
-    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 650 then
-    myHero:Attack(unit)
-  end
-  end
-  end
+  function CastR(unit)
+    if unit ~= nil and GetDistance(unit) <= Settings.combo.Rrange and SkillR.ready then
+      local TargetHealthPercent = (Target.health/Target.maxHealth)*100
+      if Settings.combo.UseR and Settings.combo.UseRP >= TargetHealthPercent then
+      if Settings.BlackList[unit.charName] then
+      if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
+      if Settings.Misc.Prediction == 1 then
+        CastPosition,  HitChance,  Position = VP:GetLineAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
+        if HitChance >= 2 then
+          Packet("S_CAST", {spellId = _R, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
+          end
+          else 
+           if Settings.Misc.Prediction == 2 then
+           local RPos, RHitChance = HPred:GetPredict("R", unit, myHero)
+           if RHitChance >= Settings.Misc.R then
+               if VIP_USER then
+               Packet("S_CAST", {spellId = _R, toX = RPos.x, toY = RPos.z, fromX = RPos.x, fromY = RPos.z}):send()
+                else
+               CastSpell(_R, RPos.x, RPos.z)
+               end
+                   end
+                end
+               end
+            end
+          end
+       end
+   end
+end
+
+ 
+
   
   -- Spell function harass
   function HarassQ(unit)
   if Settings.harass.HarassQ and myHero.mana >= Settings.harass.manah then
-    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 835 then
+    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= Settings.harass.Qrange then
+    if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
     CastSpell(_Q)
-    end
-  end
-  end
-  
-  function HarassE(unit)
-  if Settings.harass.HarassE and myHero.mana >= Settings.harass.manah then
-    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 600 then
-    CastSpell(_E)
-    end
-  end
-  end
-  
-  function HarassR(unit)
-  if Settings.harass.HarassR and myHero.mana >= Settings.harass.manah then
-    if unit ~= nil and GetDistance(unit) <= 900 and SkillR.ready then
-    if Settings.BlackList[unit.charName] then
-      CastPosition,  HitChance,  Position = VP:GetLineAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
-      if HitChance >= 2 then
-        Packet("S_CAST", {spellId = _R, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
       end
     end
   end
-  end
-  end
+end  
   
-  function UseAAC(unit)
-  if Settings.harass.UseAAC then
-    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) < 600 then
-    myHero:Attack(unit)
+  function HarassE(unit)
+  if Settings.harass.HarassE and myHero.mana >= Settings.harass.manah then
+    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= Settings.harass.Erange then
+    if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
+    CastSpell(_E)
+     end
+   end
   end
+end
+  
+  function HarassR(unit)
+  local TargetHealthPercent = (Target.health/Target.maxHealth)*100
+  if Settings.harass.HarassR and myHero.mana >= Settings.harass.manah then
+    if unit ~= nil and GetDistance(unit) <= Settings.harass.Rrange and SkillR.ready then
+    if Settings.BlackList[unit.charName] and Settings.harass.UseRP >= TargetHealthPercent then
+    if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
+    if Settings.Misc.Prediction == 1 then
+      CastPosition,  HitChance,  Position = VP:GetLineAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
+      if HitChance >= 2 then
+        Packet("S_CAST", {spellId = _R, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
+        end
+          else 
+           if Settings.Misc.Prediction == 2 then
+           local RPos, RHitChance = HPred:GetPredict("R", unit, myHero)
+           if RHitChance >= Settings.Misc.R then
+               if VIP_USER then
+               Packet("S_CAST", {spellId = _R, toX = RPos.x, toY = RPos.z, fromX = RPos.x, fromY = RPos.z}):send()
+                else
+               CastSpell(_R, RPos.x, RPos.z)
+               end
+            end
+          end
+       end
+      end
+    end
+   end
   end
-  end
+end  
   
   -- combo
   function Combo(unit)
       CastQ(unit)
-      UseAAC(unit)
       CastR(unit)
       CastE(unit)
   end
@@ -246,7 +301,7 @@
   SkillQ = { range = 835, width = 700, speed = 1500, delay = .5, spellType = "selfCast", riskLevel = "kill", cc = false, hitLineCheck = false, ready = false }
   SkillW = { range = 1000, width = 1000, speed = 1500, delay = .5, spellType = "selfCast", riskLevel = "noDmg", cc = false, hitLineCheck = false, healSlot = _W, ready = false }
   SkillE = { range = 600, width = 1000, speed = 1500, delay = .5, spellType = "selfCast", riskLevel = "noDmg", cc = false, hitLineCheck = false, ready = false }
-  SkillR = { range = 900, width = 125, speed = 2400, delay = .5, spellType = "skillShot", riskLevel = "extreme", cc = true, hitLineCheck = true, timer = 0, ready = false }
+  SkillR = { range = 1000, width = 140, speed = 2400, delay = .25, spellType = "skillShot", riskLevel = "extreme", cc = true, hitLineCheck = true, timer = 0, ready = false }
   RebornLoaded, SxOrbLoaded = false, false
   VP = VPrediction()
   _G.oldDrawCircle = rawget(_G, 'DrawCircle')
@@ -289,26 +344,40 @@
   
   --auto R
   function CastAutoR()
+  if ValidTarget(unit, SkillR.range) and rPos ~= nil and maxHit >= Settings.AutoUlt.ARX then
   if SkillR.ready then
+  if Settings.AutoUlt.BlackListA[unit.charName] then
   if Settings.AutoUlt.UseAutoR then
     for _, unit in pairs(GetEnemyHeroes()) do
+        if Settings.Misc.Prediction == 1 then
         local rPos, HitChance, maxHit, Positions = VP:GetLineAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero)
-        if HitChance >= 2 then
-        if ValidTarget(unit, SkillR.range) and rPos ~= nil and maxHit >= Settings.AutoUlt.ARX then
-        if Settings.BlackList[unit.charName] then
-                 Packet("S_CAST", {spellId = _R, fromX = rPos.x, fromY = rPos.z, toX = rPos.x, toY = rPos.z}):send()
+        if HitChance >= 2 then   
+        Packet("S_CAST", {spellId = _R, fromX = rPos.x, fromY = rPos.z, toX = rPos.x, toY = rPos.z}):send()
         end
+         else 
+           if Settings.Misc.Prediction == 2 then
+           local RPos, RHitChance = HPred:GetPredict("R", unit, myHero)
+           if RHitChance >= Settings.Misc.R then
+               if VIP_USER then
+               Packet("S_CAST", {spellId = _R, toX = RPos.x, toY = RPos.z, fromX = RPos.x, fromY = RPos.z}):send()
+                else
+               CastSpell(_R, RPos.x, RPos.z)
+                end
+               end
+             end
+          end
+         end
+       end
       end
-    end
-  end
-  end
-  end
-  end
+     end
+   end
+ end
   
   function Checkorbwalk()
   if _G.Reborn_Loaded then  
      RebornLoaded = true
      print("<font color=\"#0f76ff\"> SAC LOADED </font><font color=\"#0f76ff\">")
+     Settings:addSubMenu("["..myHero.charName.."] - SAC DETECTED", "")
      elseif FileExist(LIB_PATH .. "SxOrbWalk.lua") then
       require 'SxOrbWalk'
       SxOrbMenu = Settings:addSubMenu("["..myHero.charName.."] - Orbwalking Settings", "Orbwalking")    
@@ -323,9 +392,9 @@
    end
   end
   
-  function KSQ()
+function KSQ()
     for _, unit in pairs(GetEnemyHeroes()) do
-    if GetDistance(unit) <= 835 then
+    if GetDistance(unit) <= 850 then
       if not unit.dead and Settings.Misc.KSQ then
             if unit.health <= getDmg("Q", unit, myHero) + (myHero.ap/2) then
             Packet("S_CAST", {spellId = _Q, targetNetworkId = unit.networkID}):send()
