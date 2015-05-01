@@ -1,7 +1,7 @@
-if myHero.charName ~= "Tristana" or not VIP_USER then return end
+if myHero.charName ~= "Tristana" then return end
 --require 'HPrediction'
 require "VPrediction"
-local Version = "0.002"
+local Version = "0.004"
 local AutoUpdate = true
 function ScriptMsg(msg)
   print("<font color=\"#daa520\"><b>Tristana Baguette:</b></font> <font color=\"#FFFFFF\">"..msg.."</font>")
@@ -109,9 +109,9 @@ function OnDraw()
       if SkillW.ready and Settings.Draw.DrawW then 
         DrawCircle(myHero.x, myHero.y, myHero.z, 900, ARGB(200,50 ,100,0 ))
       end
-     -- if Settings.Draw.DrawRange then 
-     --    DrawCircle(myHero.x, myHero.y, myHero.z, Settings.Draw.Range, ARGB(200,50 ,100,0 ))
-      --end
+      if Settings.Draw.DrawRange then 
+         DrawCircle(myHero.x, myHero.y, myHero.z, Settings.Draw.Range, ARGB(200,50 ,100,0 ))
+      end
 end
 
 -- Function -----------------------------------------------------------------------
@@ -123,7 +123,7 @@ function Menu()
   Settings:addSubMenu("["..myHero.charName.."] - Combo", "combo")
   Settings.combo:addParam("UseQ", "Use (Q)", SCRIPT_PARAM_ONOFF, true)
   Settings.combo:addParam("UseE", "Use (E)", SCRIPT_PARAM_ONOFF, true)
-  Settings.combo:addParam("UseW", "Use (W)", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("P"))
+  Settings.combo:addParam("UseW", "Use (W)", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("L"))
   Settings.combo:addParam("UseWMYHP", "Use (W) if my hp > or = ", SCRIPT_PARAM_SLICE, 75, 0, 100, 0)
   Settings.combo:addParam("UseWHP", "Use (W) if target hp < or = ", SCRIPT_PARAM_SLICE, 30, 0, 100, 0)
   Settings.combo:addSubMenu("Use (E) on : ", "BlackListA")
@@ -150,7 +150,7 @@ function Menu()
   Settings.Draw:addParam("DrawE", "Draw (E)/ (R)/ (AA)", SCRIPT_PARAM_ONOFF, true)
   Settings.Draw:addParam("DrawW", "Draw (W)", SCRIPT_PARAM_ONOFF, true)
   Settings.Draw:addParam("DrawRange", "Range", SCRIPT_PARAM_ONOFF, false)
---  Settings.Draw:addParam("Range", "Range", SCRIPT_PARAM_SLICE, 550, 500, 1000, 0)
+  Settings.Draw:addParam("Range", "Range", SCRIPT_PARAM_SLICE, 550, 500, 1000, 0)
   
   Settings:addSubMenu("["..myHero.charName.."] - Key ", "Key")
   Settings.Key:addParam("comboKey", "Combo Key", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("32"))
@@ -271,11 +271,14 @@ function CastW(unit)
 local TargetHealthPercent = (Target.health/Target.maxHealth)*100
 local MyHealthPercent = (myHero.health/myHero.maxHealth)*100
  if Settings.combo.UseW and SkillW.ready and Settings.combo.UseWHP >= TargetHealthPercent and MyHealthPercent >= Settings.combo.UseWMYHP and Settings.combo.BlackListW[unit.charName] then
-   if unit.team ~= myHero.team and unit.visible and unit.dead == false and _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() and not EnemyUnderTheirTower then
+   if unit.team ~= myHero.team and unit.visible and unit.dead == false and _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() and EnemyUnderTheirTower then
     if Settings.Misc.Prediction == 1 then
               CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(unit, SkillW.delay, SkillW.width, SkillW.range, SkillW.speed, myHero, false) 
               if HitChance >= 2 then
+              if VIP_USER then              
               Packet("S_CAST", {spellId = _W, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
+              else
+              CastSpell(_W, CastPosition.x, CastPosition.z)
               end
               else
               if Settings.Misc.Prediction == 2 then
@@ -288,6 +291,7 @@ local MyHealthPercent = (myHero.health/myHero.maxHealth)*100
                end
                end
                end
+             end
          end
      end
   end
@@ -394,12 +398,15 @@ function KSW(unit)
     local wDmg = getDmg("W", unit, myHero) + (myHero.ap/2) + (myHero.totalDamage)
     for _, unit in pairs(GetEnemyHeroes()) do
     if GetDistance(unit) <= 900 and SkillW.ready then
-      if not unit.dead and Settings.Misc.KSW and Settings.BlackList[unit.charName] and not EnemyUnderTheirTower then
+      if not unit.dead and Settings.Misc.KSW and Settings.BlackList[unit.charName] and EnemyUnderTheirTower then
             if unit.health <= wDmg then
             if Settings.Misc.Prediction == 1 then
               CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(unit, SkillW.delay, SkillW.width, SkillW.range, SkillW.speed, myHero, false) 
               if HitChance >= 1 then
+              if VIP_USER then              
               Packet("S_CAST", {spellId = _W, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
+              else
+              CastSpell(_W, CastPosition.x, CastPosition.z)
               end
               else
               if Settings.Misc.Prediction == 2 then
@@ -409,6 +416,7 @@ function KSW(unit)
                Packet("S_CAST", {spellId = _W, toX = WPos.x, toY = WPos.z, fromX = WPos.x, fromY = WPos.z}):send()
                else
                CastSpell(_W, WPos.x, WPos.z)
+               end
                end               
                end
                end
@@ -424,13 +432,18 @@ function KSWR(unit)
     local rDmg = getDmg("R", unit, myHero) + (myHero.ap)
     local wrDmg = wDmg + rDmg
     for _, unit in pairs(GetEnemyHeroes()) do
-    if GetDistance(unit) <= 900 and SkillW.ready and SkillR.ready and not EnemyUnderTheirTower then
+    if GetDistance(unit) <= 900 and SkillW.ready and SkillR.ready and EnemyUnderTheirTower then
       if not unit.dead and Settings.Misc.KSW and Settings.Misc.KSR and Settings.BlackList[unit.charName] then
             if unit.health <= wrDmg then
             if Settings.Misc.Prediction == 1 then
-              CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(unit, SkillW.delay, SkillW.width, SkillW.range, SkillW.speed, myHero, false) 
+              CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(unit, SkillW.delay, SkillW.width, SkillW.range, SkillW.speed, myHero, false)              
               if HitChance >= 1 then
+              if VIP_USER then              
               Packet("S_CAST", {spellId = _W, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
+              CastSpell(_R, unit)
+              else
+              CastSpell(_W, CastPosition.x, CastPosition.z)
+              CastSpell(_R, unit)
               end
               else
               if Settings.Misc.Prediction == 2 then
@@ -438,9 +451,11 @@ function KSWR(unit)
                if WHitChance >= Settings.Misc.W then
                if VIP_USER then
                Packet("S_CAST", {spellId = _W, toX = WPos.x, toY = WPos.z, fromX = WPos.x, fromY = WPos.z}):send()
+               CastSpell(_R, unit)
                else
                CastSpell(_W, WPos.x, WPos.z)
                CastSpell(_R, unit)
+               end
                end
                end
                end
