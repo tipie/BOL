@@ -1,7 +1,7 @@
 if myHero.charName ~= "Tristana" then return end
 --require 'HPrediction'
 require "VPrediction"
-local Version = "0.004"
+local Version = "0.005"
 local AutoUpdate = true
 function ScriptMsg(msg)
   print("<font color=\"#daa520\"><b>Tristana Baguette:</b></font> <font color=\"#FFFFFF\">"..msg.."</font>")
