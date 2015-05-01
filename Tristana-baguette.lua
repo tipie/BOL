@@ -451,10 +451,8 @@ function KSWR(unit)
                if WHitChance >= Settings.Misc.W then
                if VIP_USER then
                Packet("S_CAST", {spellId = _W, toX = WPos.x, toY = WPos.z, fromX = WPos.x, fromY = WPos.z}):send()
-               CastSpell(_R, unit)
                else
                CastSpell(_W, WPos.x, WPos.z)
-               CastSpell(_R, unit)
                end
                end
                end
