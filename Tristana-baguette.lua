@@ -62,7 +62,6 @@ Checkorbwalk()
 --Spell_W.type['Tristana'] = "PromptCircle"
 --Spell_W.width['Tristana'] = 270
 --Spell_W.radius['Tristana'] = 200
-
 end
 
 -- handles script logic, a pure high speed loop
@@ -257,8 +256,26 @@ function CastQ(unit)
   end
 end
 
+function CastQSX(unit)
+ if Settings.combo.UseQ and SkillQ.ready then
+   if unit.team ~= myHero.team and unit.visible and unit.dead == false and not SxOrb:CanMove() then
+    CastSpell(_Q)
+     end
+  end
+end
+
 function CastE(unit)
  if Settings.combo.UseE and _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
+   if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= TristanaRange then
+   if Settings.combo.BlackListA[unit.charName] and SkillE.ready then
+      CastSpell(_E, unit)
+      end
+    end
+  end
+end
+
+function CastESX(unit)
+ if Settings.combo.UseE and SxOrb:CanMove() then
    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= TristanaRange then
    if Settings.combo.BlackListA[unit.charName] and SkillE.ready then
       CastSpell(_E, unit)
@@ -297,9 +314,47 @@ local MyHealthPercent = (myHero.health/myHero.maxHealth)*100
   end
 end
 
+function CastWSX(unit)
+local TargetHealthPercent = (Target.health/Target.maxHealth)*100
+local MyHealthPercent = (myHero.health/myHero.maxHealth)*100
+ if Settings.combo.UseW and SkillW.ready and Settings.combo.UseWHP >= TargetHealthPercent and MyHealthPercent >= Settings.combo.UseWMYHP and Settings.combo.BlackListW[unit.charName] then
+   if unit.team ~= myHero.team and unit.visible and unit.dead == false and SxOrb:CanMove() and EnemyUnderTheirTower then
+    if Settings.Misc.Prediction == 1 then
+              CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(unit, SkillW.delay, SkillW.width, SkillW.range, SkillW.speed, myHero, false) 
+              if HitChance >= 2 then
+              if VIP_USER then              
+              Packet("S_CAST", {spellId = _W, fromX = CastPosition.x, fromY = CastPosition.z, toX = CastPosition.x, toY = CastPosition.z}):send()
+              else
+              CastSpell(_W, CastPosition.x, CastPosition.z)
+              end
+              else
+              if Settings.Misc.Prediction == 2 then
+              local RPos, RHitChance = HPred:GetPredict("W", unit, myHero)
+               if WHitChance >= Settings.Misc.W then
+               if VIP_USER then
+               Packet("S_CAST", {spellId = _W, toX = WPos.x, toY = WPos.z, fromX = WPos.x, fromY = WPos.z}):send()
+               else
+               CastSpell(_W, WPos.x, WPos.z)
+               end
+               end
+               end
+             end
+         end
+     end
+  end
+end
+
 function HarassQ(unit)
     if Settings.harass.HarassQ and SkillQ.ready then
     if unit.team ~= myHero.team and unit.visible and unit.dead == false and _G.AutoCarry.Orbwalker:IsShooting() then
+    CastSpell(_Q)
+    end
+  end
+end
+
+function HarassQSX(unit)
+    if Settings.harass.HarassQ and SkillQ.ready then
+    if unit.team ~= myHero.team and unit.visible and unit.dead == false and not SxOrb:CanMove() then
     CastSpell(_Q)
     end
   end
@@ -316,6 +371,17 @@ function HarassE(unit)
   end
 end
 
+function HarassESX(unit)
+  local MyManaPercent = (myHero.mana/myHero.maxMana)*100
+  if Settings.harass.HarassE and MyManaPercent >= Settings.harass.manah and SkillE.ready then
+    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= TristanaRange then
+    if SxOrb:CanMove() and Settings.harass.BlackListB[unit.charName] then
+    CastSpell(_E, unit)
+     end
+   end
+  end
+end
+
 function CastR(unit)
   if SkillE.ready then
     if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= TristanaRange then
@@ -325,25 +391,59 @@ function CastR(unit)
    end
   end
 end
+
+function CastRSX(unit)
+  if SkillE.ready then
+    if unit.team ~= myHero.team and unit.visible and unit.dead == false and myHero:GetDistance(unit) <= TristanaRange then
+    if SxOrb:CanMove() then
+    CastSpell(_R, unit)
+     end
+   end
+  end
+end
   
 -- combo
 function Combo(unit)
+if RebornLoaded == true then
    CastQ(unit)
    CastE(unit)
    CastW(unit)
+   else
+if SxOrbLoaded == true then
+   CastQSX(unit)
+   CastESX(unit)
+   CastWSX(unit)
+     end
+   end
 end
 
 -- harass
 function Harass(unit)
+if RebornLoaded == true then
    HarassQ(unit)
    HarassE(unit)
+   else
+if SxOrbLoaded == true then
+   HarassQSX(unit)
+   HarassESX(unit)
+      end
+   end
 end
 -- KS
 function KS(unit)
+if RebornLoaded == true then
   KSR(unit)
   KSW(unit)
   KSE(unit)
   KSWR(unit)
+  else
+if SxOrbLoaded == true then
+  KSRSX(unit)
+  KSW(unit)
+  KSE(unit)
+  KSWR(unit)
+    end
+  end
 end
 
 -- Orbwalk / activator
@@ -370,6 +470,20 @@ end
 function KSR(unit)
     local rDmg = getDmg("R", unit, myHero) + (myHero.ap)
     if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then rDmg = rDmg + (myHero.damage) end
+    for _, unit in pairs(GetEnemyHeroes()) do
+    if GetDistance(unit) <= TristanaRange and Settings.BlackList[unit.charName] then
+      if not unit.dead and Settings.Misc.KSR and SkillR.ready then
+            if unit.health <= rDmg then
+            CastSpell(_R, unit)
+          end   
+        end     
+      end
+   end
+end
+
+function KSRSX(unit)
+    local rDmg = getDmg("R", unit, myHero) + (myHero.ap)
+    if SxOrb:CanMove() then rDmg = rDmg + (myHero.damage) end
     for _, unit in pairs(GetEnemyHeroes()) do
     if GetDistance(unit) <= TristanaRange and Settings.BlackList[unit.charName] then
       if not unit.dead and Settings.Misc.KSR and SkillR.ready then
@@ -467,8 +581,19 @@ end
 
 -- calcul range
 function range()
-AArange = myHero.range + (9*myHero.level) + 1
-return AArange
+AArange = 0
+  if myHero.level == 1 then
+    AArange = 795
+  else if myHero.level == 2 then
+    AArange = 800
+  else if myHero.level == 3 or 4 then
+    AArange = 795    
+    else
+    AArange = myHero.range + (9*myHero.level) + 1
+    end
+    end
+    end
+return AArange  
 end
 
 -- ennemy is under tower ?
