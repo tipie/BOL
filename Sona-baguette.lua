@@ -14,11 +14,8 @@
   Menu()
   Checkorbwalk()
   HPred = HPrediction()
-  Spell_R.delay['Sona'] = 0.25
-  Spell_R.range['Sona'] = 900
-  Spell_R.speed['Sona'] = 2400
-  Spell_R.type['Sona'] = "DelayLine" -- (it has tail like comet)
-  Spell_R.width['Sona'] = 280
+  HPred:AddSpell("R", 'Sona', {type = "DelayLine", range = 900, delay = 0.25, speed = 2400, width = 280 })
+
   end
   
   -- handles script logic, a pure high speed loop
