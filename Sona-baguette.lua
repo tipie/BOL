@@ -41,7 +41,7 @@
       end
       end
   end
-      
+
   --handles overlay drawing (processing is not recommended here,use onTick() for that)
   function OnDraw()
     if not myHero.dead then 
@@ -197,11 +197,12 @@ end
     end
 end  
   
-  function CastR(unit)
+  function CastR(unit)    
     if unit ~= nil and GetDistance(unit) <= Settings.combo.Rrange and SkillR.ready then
       local TargetHealthPercent = (Target.health/Target.maxHealth)*100
       if Settings.combo.UseR and Settings.combo.UseRP >= TargetHealthPercent then
       if Settings.BlackList[unit.charName] then
+      if not Immune(unit) then
       if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
       if Settings.Misc.Prediction == 1 then
         CastPosition,  HitChance,  Position = VP:GetLineAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
@@ -222,7 +223,8 @@ end
                end
             end
           end
-       end
+        end
+      end
    end
 end
 
@@ -256,6 +258,7 @@ end
     if unit ~= nil and GetDistance(unit) <= Settings.harass.Rrange and SkillR.ready then
     if Settings.BlackList[unit.charName] and Settings.harass.UseRP >= TargetHealthPercent then
     if _G.AutoCarry.Orbwalker:CanMove() and not _G.AutoCarry.Orbwalker:IsShooting() then
+    if not Immune(unit) then
     if Settings.Misc.Prediction == 1 then
       CastPosition,  HitChance,  Position = VP:GetLineAOECastPosition(unit, SkillR.delay, SkillR.width, SkillR.range, SkillR.speed, myHero, false) 
       if HitChance >= 2 then
@@ -269,6 +272,7 @@ end
                Packet("S_CAST", {spellId = _R, toX = RPos.x, toY = RPos.z, fromX = RPos.x, fromY = RPos.z}):send()
                 else
                CastSpell(_R, RPos.x, RPos.z)
+               end
                end
             end
           end
@@ -387,16 +391,21 @@ end
   if  not _G.Activator then
       print("<font color=\"#c20e00\"> Please download activator for (W) spell support </font><font color=\"#c20e00\">")
    end
-  end
-  
-function KSQ()
-    for _, unit in pairs(GetEnemyHeroes()) do
-    if GetDistance(unit) <= 850 then
-      if not unit.dead and Settings.Misc.KSQ then
-            if unit.health <= getDmg("Q", unit, myHero) + (myHero.ap/2) then
-            Packet("S_CAST", {spellId = _Q, targetNetworkId = unit.networkID}):send()
-          end   
-        end     
-      end
-   end
-   end  
+  end  
+
+function Immune(unit)
+    if TargetHaveBuff("JudicatorIntervention", unit) then return true
+    elseif TargetHaveBuff("UndyingRage", unit) then return true
+    elseif TargetHaveBuff("ZacRebirthReady", unit) then return true
+    elseif TargetHaveBuff("aatroxpassivedeath", unit) then return true
+    elseif TargetHaveBuff("FerociousHowl", unit) then return true
+    elseif TargetHaveBuff("VladimirSanguinePool", unit) then return true
+    elseif TargetHaveBuff("chronorevive", unit) then return true
+    elseif TargetHaveBuff("chronoshift", unit) then return true
+    elseif TargetHaveBuff("KarthusDeathDefiedBuff", unit) then return true
+    elseif TargetHaveBuff("kogmawicathiansurprise", unit) then return true
+    elseif TargetHaveBuff("sionpassivezombie", unit) then return true
+    elseif TargetHaveBuff("zhonyasringshield", unit) then return true
+    elseif TargetHaveBuff("zyrapqueenofthorns", unit) then return true end
+    return false
+end
